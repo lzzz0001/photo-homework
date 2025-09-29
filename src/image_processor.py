@@ -93,7 +93,7 @@ class ImageProcessor:
             print(f"Error loading image {file_path}: {e}")
             return None
     
-    def get_font(self, font_family: str, font_size: int, bold: bool = False, italic: bool = False) -> ImageFont.ImageFont:
+    def get_font(self, font_family: str, font_size: int, bold: bool = False, italic: bool = False):
         """Get font object with fallback handling"""
         font_style = ""
         if bold and italic:
@@ -208,8 +208,8 @@ class ImageProcessor:
                                                abs(config.shadow_offset[1]))) + 5
         
         # Create watermark image with padding
-        wm_width = text_width + padding * 2
-        wm_height = text_height + padding * 2
+        wm_width = int(text_width + padding * 2)
+        wm_height = int(text_height + padding * 2)
         watermark = Image.new('RGBA', (wm_width, wm_height), (0, 0, 0, 0))
         draw = ImageDraw.Draw(watermark)
         
@@ -340,7 +340,7 @@ class ImageProcessor:
     def batch_process(self, image_paths: List[str], config: WatermarkConfig, 
                      output_dir: str, output_format: str = 'JPEG', 
                      quality: int = 95, filename_prefix: str = "", 
-                     filename_suffix: str = "", resize_options: dict = None) -> List[str]:
+                     filename_suffix: str = "", resize_options: Optional[dict] = None) -> List[str]:
         """Process multiple images with watermarks"""
         results = []
         
