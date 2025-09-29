@@ -14,7 +14,7 @@ from typing import Optional, List, Dict, Any
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 
 from image_processor import ImageProcessor, WatermarkConfig, WatermarkPosition, WatermarkType
-from file_manager import FileManager
+from file_manager import FileManager, DragDropHandler
 from template_manager import TemplateManager
 import tkinter.simpledialog
 
@@ -45,6 +45,12 @@ class WatermarkApp:
         self.create_widgets()
         self.setup_layout()
         self.bind_events()
+        
+        # Setup drag and drop functionality
+        self.setup_drag_drop()
+        
+        # Setup manual watermark positioning
+        self.setup_manual_positioning()
         
         # Load default template if available
         self.load_last_template()
@@ -527,6 +533,62 @@ class WatermarkApp:
         self.var_watermark_text.trace('w', self.on_config_change)
         self.var_opacity.trace('w', self.on_config_change)
         self.var_rotation.trace('w', self.on_config_change)
+    
+    def setup_drag_drop(self):
+        """Setup drag and drop functionality"""
+        try:
+            # Create drag drop handler for the drop frame
+            self.drag_drop_handler = DragDropHandler(
+                self.drop_frame, 
+                self.file_manager, 
+                callback=self.on_files_dropped
+            )
+        except Exception as e:
+            print(f"Warning: Drag-drop functionality not available: {e}")
+            # Create fallback simple drag-drop for standard tkinter
+            self.drop_frame.bind("<Button-1>", lambda e: self.import_files())
+    
+    def on_files_dropped(self, file_paths):
+        """Handle files dropped into the application"""
+        if file_paths:
+            self.update_file_list()
+            self.update_file_count()
+            # Select the first newly imported image
+            if self.file_manager.imported_files:
+                self.current_image_index = max(0, len(self.file_manager.imported_files) - len(file_paths))
+                self.load_current_image()
+    
+    def setup_manual_positioning(self):
+        """Setup manual watermark positioning with mouse drag"""
+        # Bind mouse events to preview canvas for watermark dragging
+        self.preview_canvas.bind("<Button-1>", self.on_preview_click)
+        self.preview_canvas.bind("<B1-Motion>", self.on_preview_drag)
+        self.preview_canvas.bind("<ButtonRelease-1>", self.on_preview_release)
+        self.dragging_watermark = False
+        self.drag_start_x = 0
+        self.drag_start_y = 0
+    
+    def on_preview_click(self, event):
+        """Handle mouse click on preview canvas"""
+        if self.original_image:
+            self.dragging_watermark = True
+            self.drag_start_x = event.x
+            self.drag_start_y = event.y
+            # Set position to custom and update coordinates
+            self.var_position.set(WatermarkPosition.CUSTOM.value)
+            self.current_config.position = WatermarkPosition.CUSTOM
+    
+    def on_preview_drag(self, event):
+        """Handle mouse drag on preview canvas"""
+        if self.dragging_watermark and self.original_image:
+            # Calculate new position relative to image
+            self.current_config.custom_x = event.x
+            self.current_config.custom_y = event.y
+            self.update_preview()
+    
+    def on_preview_release(self, event):
+        """Handle mouse release on preview canvas"""
+        self.dragging_watermark = False
     
     # File operations methods
     def load_last_template(self):

@@ -263,7 +263,7 @@ class FileManager:
             print(f"Error creating thumbnail for {image_path}: {e}")
             return None
     
-    def backup_file(self, file_path: str, backup_dir: str = None) -> Optional[str]:
+    def backup_file(self, file_path: str, backup_dir: Optional[str] = None) -> Optional[str]:
         """Create a backup of a file before processing"""
         try:
             if backup_dir is None:
@@ -289,26 +289,45 @@ class FileManager:
             return None
 
 class DragDropHandler:
-    """Handles drag and drop functionality for file import"""
+    """Handles drag and drop functionality for file import with fallback support"""
     
     def __init__(self, widget, file_manager: FileManager, callback=None):
         self.widget = widget
         self.file_manager = file_manager
         self.callback = callback
         
-        # Enable drag and drop
-        self.widget.drop_target_register('DND_FILES')
-        self.widget.dnd_bind('<<Drop>>', self.on_drop)
-        self.widget.dnd_bind('<<DragEnter>>', self.on_drag_enter)
-        self.widget.dnd_bind('<<DragLeave>>', self.on_drag_leave)
+        # Try to enable enhanced drag and drop, fall back to basic functionality
+        try:
+            # Try to use tkinter DND if available
+            self.widget.drop_target_register('DND_FILES')
+            self.widget.dnd_bind('<<Drop>>', self.on_drop)
+            self.widget.dnd_bind('<<DragEnter>>', self.on_drag_enter)
+            self.widget.dnd_bind('<<DragLeave>>', self.on_drag_leave)
+            self.dnd_enabled = True
+        except (AttributeError, Exception):
+            # Fallback: Use basic tkinter events
+            self.widget.bind('<Button-1>', self.on_click_fallback)
+            self.dnd_enabled = False
+            print("Enhanced drag-drop not available, using click fallback")
+    
+    def on_click_fallback(self, event):
+        """Fallback: Open file dialog when drag area is clicked"""
+        if self.callback:
+            # Simulate file selection
+            file_paths = self.file_manager.select_files_dialog()
+            if file_paths:
+                imported = self.file_manager.import_multiple_files(file_paths)
+                self.callback(imported)
     
     def on_drag_enter(self, event):
         """Handle drag enter event"""
-        self.widget.configure(relief='sunken')
+        if hasattr(self.widget, 'configure'):
+            self.widget.configure(relief='sunken')
     
     def on_drag_leave(self, event):
         """Handle drag leave event"""
-        self.widget.configure(relief='raised')
+        if hasattr(self.widget, 'configure'):
+            self.widget.configure(relief='raised')
     
     def on_drop(self, event):
         """Handle file drop event"""
