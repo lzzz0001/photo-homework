@@ -138,11 +138,13 @@ def test_drag_drop_handler():
         handler = DragDropHandler(test_frame, file_manager, test_callback)
         print("  ✓ DragDropHandler created successfully")
         
-        # Test fallback functionality (click simulation)
-        if hasattr(handler, 'on_click_fallback'):
-            print("  ✓ Click fallback functionality available")
+        # Test functionality (check for working drag-drop or fallback)
+        if hasattr(handler, 'dnd_enabled') and handler.dnd_enabled:
+            print("  ✓ Native drag-drop functionality enabled")
+        elif hasattr(handler, 'on_click_import'):
+            print("  ✓ Click-to-import fallback functionality available")
         else:
-            print("  ✗ Click fallback not implemented")
+            print("  ✗ No working functionality found")
             return False
         
         print("Drag-drop handler tests passed! ✓")

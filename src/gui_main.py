@@ -165,9 +165,9 @@ class WatermarkApp:
         self.drop_frame.pack(fill=tk.X, pady=10)
         self.drop_frame.pack_propagate(False)
         
-        drop_label = tk.Label(self.drop_frame, text="Drag & Drop Images Here", 
-                             bg='lightgray', fg='darkblue')
-        drop_label.pack(expand=True)
+        self.drop_label = tk.Label(self.drop_frame, text="Drag & Drop Images Here\nor Click to Browse", 
+                             bg='lightgray', fg='darkblue', font=('Arial', 10))
+        self.drop_label.pack(expand=True)
         
         # File count label
         self.file_count_label = ttk.Label(import_frame, text="Files imported: 0")
@@ -543,10 +543,20 @@ class WatermarkApp:
                 self.file_manager, 
                 callback=self.on_files_dropped
             )
+            
+            # Update label based on drag-drop capability
+            if hasattr(self.drag_drop_handler, 'dnd_enabled') and self.drag_drop_handler.dnd_enabled:
+                self.drop_label.config(text="✓ Drag & Drop Images Here\n(Native drag-drop enabled)", 
+                                     fg='darkgreen')
+            else:
+                self.drop_label.config(text="Click to Import Images\n(Drag-drop fallback mode)", 
+                                     fg='darkorange')
+                
         except Exception as e:
             print(f"Warning: Drag-drop functionality not available: {e}")
             # Create fallback simple drag-drop for standard tkinter
             self.drop_frame.bind("<Button-1>", lambda e: self.import_files())
+            self.drop_label.config(text="Click to Import Images\n(Fallback mode)", fg='darkred')
     
     def on_files_dropped(self, file_paths):
         """Handle files dropped into the application"""

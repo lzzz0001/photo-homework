@@ -10,6 +10,19 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from PIL import Image
+import sys
+import platform
+
+# Import Windows-specific modules for drag-drop if available
+if platform.system() == "Windows":
+    try:
+        import ctypes
+        from ctypes import wintypes
+        WINDOWS_DND_AVAILABLE = True
+    except ImportError:
+        WINDOWS_DND_AVAILABLE = False
+else:
+    WINDOWS_DND_AVAILABLE = False
 
 class FileManager:
     """Handles all file operations for the watermark application"""
@@ -289,74 +302,179 @@ class FileManager:
             return None
 
 class DragDropHandler:
-    """Handles drag and drop functionality for file import with fallback support"""
+    """Handles drag and drop functionality for file import with robust Windows support"""
     
     def __init__(self, widget, file_manager: FileManager, callback=None):
         self.widget = widget
         self.file_manager = file_manager
         self.callback = callback
+        self.dnd_enabled = False
         
-        # Try to enable enhanced drag and drop, fall back to basic functionality
-        try:
-            # Try to use tkinter DND if available
-            self.widget.drop_target_register('DND_FILES')
-            self.widget.dnd_bind('<<Drop>>', self.on_drop)
-            self.widget.dnd_bind('<<DragEnter>>', self.on_drag_enter)
-            self.widget.dnd_bind('<<DragLeave>>', self.on_drag_leave)
-            self.dnd_enabled = True
-        except (AttributeError, Exception):
-            # Fallback: Use basic tkinter events
-            self.widget.bind('<Button-1>', self.on_click_fallback)
-            self.dnd_enabled = False
-            print("Enhanced drag-drop not available, using click fallback")
+        # Setup drag-drop functionality
+        self.setup_dragdrop()
     
-    def on_click_fallback(self, event):
-        """Fallback: Open file dialog when drag area is clicked"""
+    def setup_dragdrop(self):
+        """Setup the most compatible drag-drop solution"""
+        # Method 1: Try tkdnd if available (most reliable)
+        if self.try_tkdnd():
+            return
+        
+        # Method 2: Try Windows native if on Windows
+        if platform.system() == "Windows" and self.try_windows_native():
+            return
+        
+        # Method 3: Enhanced fallback with visual feedback
+        self.setup_enhanced_fallback()
+    
+    def try_tkdnd(self):
+        """Try to use tkdnd library if available"""
+        try:
+            # Check if tkdnd is available
+            self.widget.tk.call('package', 'require', 'tkdnd')
+            
+            # Register as drop target
+            self.widget.tk.call('tkdnd::drop_target', 'register', self.widget, 'DND_Files')
+            
+            # Bind events
+            self.widget.bind('<<Drop:DND_Files>>', self.on_tkdnd_drop)
+            self.widget.bind('<<DragEnter>>', self.on_drag_enter)
+            self.widget.bind('<<DragLeave>>', self.on_drag_leave)
+            
+            self.dnd_enabled = True
+            print("✓ tkdnd drag-drop enabled")
+            return True
+            
+        except (tk.TclError, Exception) as e:
+            print(f"tkdnd not available: {e}")
+            return False
+    
+    def try_windows_native(self):
+        """Try Windows-specific drag-drop using windnd"""
+        try:
+            # Try importing windnd (Windows-specific drag-drop)
+            import windnd
+            
+            # Hook the widget for file drops
+            windnd.hook_dropfiles(self.widget, func=self.on_windows_drop)
+            
+            self.dnd_enabled = True
+            print("✓ Windows native drag-drop enabled")
+            return True
+            
+        except ImportError:
+            try:
+                # Fallback: Try installing windnd dynamically
+                import subprocess
+                import sys
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "windnd"])
+                
+                # Try importing again
+                import windnd
+                windnd.hook_dropfiles(self.widget, func=self.on_windows_drop)
+                
+                self.dnd_enabled = True
+                print("✓ Windows native drag-drop enabled (windnd installed)")
+                return True
+                
+            except Exception as e:
+                print(f"Windows native drag-drop failed: {e}")
+                return False
+        except Exception as e:
+            print(f"Windows native drag-drop setup failed: {e}")
+            return False
+    
+    def setup_enhanced_fallback(self):
+        """Setup enhanced fallback with better visual feedback"""
+        print("Setting up enhanced click-to-import fallback")
+        
+        # Configure the widget as a drop zone
+        self.widget.configure(
+            relief='ridge',
+            bd=2,
+            bg='#f0f0f0',
+            cursor='hand2'
+        )
+        
+        # Bind events
+        self.widget.bind('<Button-1>', self.on_click_import)
+        self.widget.bind('<Enter>', self.on_hover_enter)
+        self.widget.bind('<Leave>', self.on_hover_leave)
+        
+        # Add instruction text if widget is a frame
+        try:
+            for child in self.widget.winfo_children():
+                if isinstance(child, tk.Label):
+                    child.configure(text="Click to Import Images\n(Drag-drop not available)")
+                    break
+        except:
+            pass
+    
+    def on_tkdnd_drop(self, event):
+        """Handle drop event from tkdnd"""
+        try:
+            # Get dropped files
+            files = self.widget.tk.splitlist(event.data)
+            self._process_dropped_files(files)
+        except Exception as e:
+            print(f"Error processing tkdnd drop: {e}")
+    
+    def on_windows_drop(self, files):
+        """Handle drop event from Windows native"""
+        try:
+            self._process_dropped_files(files)
+        except Exception as e:
+            print(f"Error processing Windows drop: {e}")
+    
+    def on_click_import(self, event):
+        """Handle click to import files"""
         if self.callback:
-            # Simulate file selection
+            # Open file selection dialog
             file_paths = self.file_manager.select_files_dialog()
             if file_paths:
                 imported = self.file_manager.import_multiple_files(file_paths)
-                self.callback(imported)
+                if imported:
+                    self.callback(imported)
+                    print(f"Imported {len(imported)} files via click")
+    
+    def on_hover_enter(self, event):
+        """Handle mouse hover enter"""
+        self.widget.configure(bg='#e6f3ff', relief='solid')
+    
+    def on_hover_leave(self, event):
+        """Handle mouse hover leave"""
+        self.widget.configure(bg='#f0f0f0', relief='ridge')
     
     def on_drag_enter(self, event):
         """Handle drag enter event"""
-        if hasattr(self.widget, 'configure'):
-            self.widget.configure(relief='sunken')
+        self.widget.configure(bg='#d4edda', relief='solid')
     
     def on_drag_leave(self, event):
         """Handle drag leave event"""
-        if hasattr(self.widget, 'configure'):
-            self.widget.configure(relief='raised')
+        self.widget.configure(bg='#f0f0f0', relief='ridge')
     
-    def on_drop(self, event):
-        """Handle file drop event"""
-        self.widget.configure(relief='raised')
-        
-        files = []
-        # Parse dropped data
-        if hasattr(event, 'data'):
-            # Handle different data formats
-            data = event.data
-            if isinstance(data, str):
-                # Split by spaces or newlines and clean up
-                files = [f.strip('{}').strip('"').strip("'") for f in data.split()]
-            elif isinstance(data, (list, tuple)):
-                files = [str(f) for f in data]
-        
-        imported_files = []
-        imported_folders = []
-        
-        for file_path in files:
-            if os.path.isfile(file_path):
-                if self.file_manager.import_single_file(file_path):
-                    imported_files.append(file_path)
-            elif os.path.isdir(file_path):
-                folder_files = self.file_manager.import_folder(file_path, recursive=False)
-                imported_folders.extend(folder_files)
-        
-        # Call callback if provided
-        if self.callback:
-            self.callback(imported_files + imported_folders)
-        
-        return 'copy'
+    def _process_dropped_files(self, files):
+        """Process the list of dropped files"""
+        try:
+            imported_files = []
+            imported_folders = []
+            
+            for file_path in files:
+                file_path = str(file_path).strip('"\'{}')
+                
+                if os.path.isfile(file_path):
+                    if self.file_manager.import_single_file(file_path):
+                        imported_files.append(file_path)
+                elif os.path.isdir(file_path):
+                    folder_files = self.file_manager.import_folder(file_path, recursive=False)
+                    imported_folders.extend(folder_files)
+            
+            # Call callback if provided
+            all_imported = imported_files + imported_folders
+            if self.callback and all_imported:
+                self.callback(all_imported)
+                print(f"✓ Successfully imported {len(all_imported)} files via drag-drop")
+            elif not all_imported:
+                print("No valid image files found in dropped items")
+                
+        except Exception as e:
+            print(f"Error processing dropped files: {e}")
