@@ -421,9 +421,18 @@ class DragDropHandler:
     def on_windows_drop(self, files):
         """Handle drop event from Windows native"""
         try:
-            self._process_dropped_files(files)
+            print(f"Windows drop received: {files} (type: {type(files)})")
+            if isinstance(files, (list, tuple)):
+                self._process_dropped_files(files)
+            elif isinstance(files, str):
+                # Single file as string
+                self._process_dropped_files([files])
+            else:
+                print(f"Unexpected drop data type: {type(files)}")
         except Exception as e:
             print(f"Error processing Windows drop: {e}")
+            import traceback
+            traceback.print_exc()
     
     def on_click_import(self, event):
         """Handle click to import files"""
@@ -455,18 +464,33 @@ class DragDropHandler:
     def _process_dropped_files(self, files):
         """Process the list of dropped files"""
         try:
+            print(f"Processing {len(files)} dropped files: {files}")
             imported_files = []
             imported_folders = []
             
             for file_path in files:
+                # Clean the file path - handle bytes from windnd
+                if isinstance(file_path, bytes):
+                    file_path = file_path.decode('utf-8')
                 file_path = str(file_path).strip('"\'{}')
+                print(f"Processing file: {file_path}")
                 
                 if os.path.isfile(file_path):
-                    if self.file_manager.import_single_file(file_path):
-                        imported_files.append(file_path)
+                    print(f"File exists: {file_path}")
+                    if self.file_manager.is_image_file(file_path):
+                        print(f"Valid image file: {file_path}")
+                        if self.file_manager.import_single_file(file_path):
+                            imported_files.append(file_path)
+                            print(f"Successfully imported: {file_path}")
+                    else:
+                        print(f"Not an image file: {file_path}")
                 elif os.path.isdir(file_path):
+                    print(f"Processing directory: {file_path}")
                     folder_files = self.file_manager.import_folder(file_path, recursive=False)
                     imported_folders.extend(folder_files)
+                    print(f"Imported {len(folder_files)} files from folder")
+                else:
+                    print(f"Path does not exist: {file_path}")
             
             # Call callback if provided
             all_imported = imported_files + imported_folders
@@ -475,6 +499,10 @@ class DragDropHandler:
                 print(f"✓ Successfully imported {len(all_imported)} files via drag-drop")
             elif not all_imported:
                 print("No valid image files found in dropped items")
+            else:
+                print("No callback provided")
                 
         except Exception as e:
             print(f"Error processing dropped files: {e}")
+            import traceback
+            traceback.print_exc()

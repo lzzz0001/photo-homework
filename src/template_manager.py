@@ -6,7 +6,7 @@ Handles watermark template persistence and management operations.
 import os
 import json
 from typing import Dict, List, Optional, Any
-from src.image_processor import WatermarkConfig, WatermarkPosition, WatermarkType
+from image_processor import WatermarkConfig, WatermarkPosition, WatermarkType
 
 class TemplateManager:
     """Manages watermark template saving, loading, and organization"""
