@@ -99,3 +99,6 @@ test_*.tiff
 test_*.tif
 test.bmp
 test.tiff
+
+# Generated release packages
+PhotoWatermark_v*_*.zip

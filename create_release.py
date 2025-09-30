@@ -18,13 +18,10 @@ def create_release_package():
         shutil.rmtree(release_dir)
     os.makedirs(release_dir)
     
-    # Copy executable
-    if os.path.exists("dist/PhotoWatermark.exe"):
-        shutil.copy2("dist/PhotoWatermark.exe", os.path.join(release_dir, "PhotoWatermark.exe"))
-        print("✓ Copied executable")
-    else:
-        print("✗ Executable not found! Run 'pyinstaller PhotoWatermark.spec' first")
-        return False
+    # Note: We no longer copy the executable to the repository
+    # Executables should be uploaded as GitHub Releases instead
+    print("ℹ️  Executables are no longer stored in the repository.")
+    print("   They should be uploaded as GitHub Releases instead.")
     
     # Copy documentation
     docs_to_copy = [
@@ -44,8 +41,12 @@ def create_release_package():
     source_files = [
         "main.py",
         "requirements.txt",
+        "create_release.py",
+        "create_github_release.py",
         "PhotoWatermark.spec",
         "test_app.py",
+        "test_dragdrop.py",
+        "test_missing_features.py",
         "src/"
     ]
     
@@ -61,9 +62,9 @@ def create_release_package():
     
     print("✓ Created source code archive")
     
-    # Create final release zip
+    # Create a simple release package with just documentation
     timestamp = datetime.now().strftime("%Y%m%d")
-    release_zip = f"PhotoWatermark_v1.0.0_{timestamp}.zip"
+    release_zip = f"PhotoWatermark_v1.0.0_{timestamp}_source_only.zip"
     
     with zipfile.ZipFile(release_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
         for root, dirs, files in os.walk(release_dir):
@@ -72,14 +73,12 @@ def create_release_package():
                 arcname = os.path.relpath(file_path, release_dir)
                 zf.write(file_path, arcname)
     
-    print(f"✓ Created release package: {release_zip}")
+    print(f"✓ Created source-only release package: {release_zip}")
     
     # Calculate file sizes
-    exe_size = os.path.getsize("dist/PhotoWatermark.exe") / (1024 * 1024)  # MB
     zip_size = os.path.getsize(release_zip) / (1024 * 1024)  # MB
     
     print(f"\n📦 Release Summary:")
-    print(f"   Executable size: {exe_size:.1f} MB")
     print(f"   Release package: {zip_size:.1f} MB")
     print(f"   Files included: {len(os.listdir(release_dir))} items")
     
@@ -87,6 +86,10 @@ def create_release_package():
     print(f"   Upload: {release_zip}")
     print(f"   Tag: v1.0.0")
     print(f"   Title: Photo Watermark Application v1.0.0")
+    print("\n💡 To create executables for release:")
+    print("   1. Run 'pyinstaller --onefile --windowed main.py'")
+    print("   2. Upload the executable as a GitHub Release asset")
+    print("   3. Source code is already in this package")
     
     return True
 
