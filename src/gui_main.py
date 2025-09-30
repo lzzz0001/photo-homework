@@ -52,6 +52,9 @@ class WatermarkApp:
         # Setup manual watermark positioning
         self.setup_manual_positioning()
         
+        # Setup tooltip functionality
+        self.setup_tooltips()
+        
         # Load default template if available
         self.load_last_template()
     
@@ -534,6 +537,67 @@ class WatermarkApp:
         self.var_opacity.trace('w', self.on_config_change)
         self.var_rotation.trace('w', self.on_config_change)
     
+    def setup_tooltips(self):
+        """Setup tooltip functionality"""
+        self.tooltips = {}
+    
+    def add_tooltip(self, widget, text):
+        """Add tooltip to a widget"""
+        def on_enter(event):
+            self.show_tooltip(widget, text)
+        
+        def on_leave(event):
+            self.hide_tooltip()
+        
+        widget.bind("<Enter>", on_enter)
+        widget.bind("<Leave>", on_leave)
+    
+    def format_filename_for_display(self, filename, max_length=30):
+        """Format filename for display, showing beginning and end for long names"""
+        if len(filename) <= max_length:
+            return filename
+        
+        # For very long filenames, show start and end with "..." in middle
+        half_length = (max_length - 3) // 2
+        start = filename[:half_length]
+        end = filename[-half_length:] if len(filename) > half_length else filename
+        return f"{start}...{end}"
+    
+    def show_tooltip(self, widget, text):
+        """Show tooltip with full text"""
+        # Get widget position
+        x, y = widget.winfo_rootx(), widget.winfo_rooty()
+        
+        # Create tooltip window if it doesn't exist
+        if not hasattr(self, '_tooltip_window') or not self._tooltip_window:
+            self._tooltip_window = tk.Toplevel()
+            self._tooltip_window.wm_overrideredirect(True)
+            self._tooltip_window.configure(bg='yellow')
+            
+            self._tooltip_label = tk.Label(
+                self._tooltip_window,
+                text=text,
+                bg='yellow',
+                fg='black',
+                font=('Arial', 8),
+                padx=5,
+                pady=2
+            )
+            self._tooltip_label.pack()
+        else:
+            self._tooltip_label.configure(text=text)
+            self._tooltip_window.configure(bg='yellow')
+            self._tooltip_label.configure(bg='yellow', fg='black')
+        
+        # Position tooltip near the widget
+        self._tooltip_window.wm_geometry(f"+{x}+{y-30}")
+        self._tooltip_window.deiconify()
+    
+    def hide_tooltip(self):
+        """Hide tooltip"""
+        if hasattr(self, '_tooltip_window') and self._tooltip_window:
+            self._tooltip_window.withdraw()
+    
     def setup_drag_drop(self):
         """Setup drag and drop functionality"""
         try:
@@ -752,10 +816,13 @@ class WatermarkApp:
                 
                 # Create filename label
                 filename = os.path.basename(file_path)
-                if len(filename) > 15:
-                    filename = filename[:12] + "..."
-                name_label = tk.Label(thumb_frame, text=filename, font=("Arial", 8))
+                display_name = self.format_filename_for_display(filename, 30)
+                name_label = tk.Label(thumb_frame, text=display_name, font=("Arial", 8))
                 name_label.pack()
+                
+                # Add tooltip for full filename on hover
+                self.add_tooltip(thumb_label, filename)
+                self.add_tooltip(name_label, filename)
                 
                 # Bind click event
                 thumb_label.bind("<Button-1>", lambda e, idx=index: self.select_image(idx))

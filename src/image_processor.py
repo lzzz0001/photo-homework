@@ -79,12 +79,21 @@ class ImageProcessor:
         return ext in self.SUPPORTED_INPUT_FORMATS
     
     def load_image(self, file_path: str) -> Optional[Image.Image]:
-        """Load an image from file path"""
+        """Load an image from file path with EXIF orientation handling"""
         try:
             if not self.is_supported_format(file_path):
                 return None
             
             image = Image.open(file_path)
+            
+            # Handle EXIF orientation using ImageOps
+            try:
+                from PIL import ImageOps
+                image = ImageOps.exif_transpose(image)
+            except Exception:
+                # If EXIF handling fails, continue with original image
+                pass
+            
             # Convert to RGBA to handle transparency consistently
             if image.mode != 'RGBA':
                 image = image.convert('RGBA')
