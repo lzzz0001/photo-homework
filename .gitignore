@@ -82,4 +82,20 @@ temporary/
 
 # User templates (but keep default templates)
 templates/*.json
-!templates/default_templates.json
+
+# Release files and executables
+*.zip
+*.exe
+*.msi
+release/
+
+# Large test files
+test_formats/
+test_*.png
+test_*.jpg
+test_*.jpeg
+test_*.bmp
+test_*.tiff
+test_*.tif
+test.bmp
+test.tiff
