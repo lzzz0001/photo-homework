@@ -102,3 +102,34 @@ test.tiff
 
 # Generated release packages
 PhotoWatermark_v*_*.zip
+
+# Build and development artifacts
+*_build_env/
+*_env/
+clean_build_env/
+photo_watermark_env/
+build_*.bat
+install_*.bat
+setup_*.bat
+PhotoWatermark*.bat
+
+# Test and debug files
+*_test.py
+test_main.py
+diagnostics.py
+safe_main.py
+simple_main.py
+*_specific_test.py
+step_by_step_test.py
+watermark_app_test.py
+windnd_installer.py
+
+# Executable and documentation artifacts
+EXECUTABLE_README*.txt
+README_*.txt
+
+# Test output directories
+test_batch_*/
+test_positioning/
+test_tiff_output/
+test_formats/

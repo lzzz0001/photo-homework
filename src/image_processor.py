@@ -72,6 +72,17 @@ class ImageProcessor:
             "C:/Windows/Fonts/times.ttf",
             "arial.ttf",  # fallback
         ]
+        
+        # Chinese font support
+        self.chinese_font_paths = [
+            "C:/Windows/Fonts/simsun.ttc",  # 宋体
+            "C:/Windows/Fonts/simhei.ttf",  # 黑体
+            "C:/Windows/Fonts/msyh.ttc",    # 微软雅黑
+            "C:/Windows/Fonts/simkai.ttf",  # 楷体
+            "C:/Windows/Fonts/simfang.ttf", # 仿宋
+            "C:/Windows/Fonts/STXIHEI.TTF", # 华文细黑
+            "C:/Windows/Fonts/STZHONGS.TTF", # 华文中宋
+        ]
     
     def is_supported_format(self, file_path: str) -> bool:
         """Check if the file format is supported"""
@@ -103,7 +114,7 @@ class ImageProcessor:
             return None
     
     def get_font(self, font_family: str, font_size: int, bold: bool = False, italic: bool = False):
-        """Get font object with fallback handling"""
+        """Get font object with fallback handling and Chinese character support"""
         font_style = ""
         if bold and italic:
             font_style = "bi"
@@ -112,7 +123,9 @@ class ImageProcessor:
         elif italic:
             font_style = "i"
         
-        # Try to find the font in system fonts
+        # Check if text contains Chinese characters (will be checked later in create_text_watermark)
+        # For now, we'll prepare both Western and Chinese font paths
+        
         font_paths_to_try = []
         
         # Add specific font family paths
@@ -131,15 +144,31 @@ class ImageProcessor:
                 f"C:/Windows/Fonts/calibri{font_style}.ttf",
                 "C:/Windows/Fonts/calibri.ttf"
             ])
+        elif font_family.lower() in ["simsun", "宋体"]:
+            font_paths_to_try.extend([
+                "C:/Windows/Fonts/simsun.ttc"
+            ])
+        elif font_family.lower() in ["simhei", "黑体"]:
+            font_paths_to_try.extend([
+                "C:/Windows/Fonts/simhei.ttf"
+            ])
+        elif font_family.lower() in ["microsoftyahei", "微软雅黑", "yahei"]:
+            font_paths_to_try.extend([
+                "C:/Windows/Fonts/msyh.ttc",
+                "C:/Windows/Fonts/msyhbd.ttc" if bold else "C:/Windows/Fonts/msyh.ttc"
+            ])
         
-        # Add default font paths
+        # Add default Western font paths
         font_paths_to_try.extend(self.default_font_paths)
+        
+        # Add Chinese font paths as fallback
+        font_paths_to_try.extend(self.chinese_font_paths)
         
         for font_path in font_paths_to_try:
             try:
                 if os.path.exists(font_path):
                     return ImageFont.truetype(font_path, font_size)
-            except:
+            except Exception as e:
                 continue
         
         # Ultimate fallback to default font
@@ -147,6 +176,33 @@ class ImageProcessor:
             return ImageFont.load_default()
         except:
             return ImageFont.load_default()
+    
+    def has_chinese_characters(self, text: str) -> bool:
+        """Check if text contains Chinese characters"""
+        for char in text:
+            if '\u4e00' <= char <= '\u9fff':
+                return True
+        return False
+    
+    def get_chinese_font(self, font_size: int, bold: bool = False):
+        """Get a Chinese-compatible font"""
+        chinese_fonts = [
+            "C:/Windows/Fonts/msyh.ttc",    # 微软雅黑 (best for Chinese)
+            "C:/Windows/Fonts/msyhbd.ttc" if bold else "C:/Windows/Fonts/msyh.ttc",
+            "C:/Windows/Fonts/simsun.ttc",  # 宋体
+            "C:/Windows/Fonts/simhei.ttf",  # 黑体
+            "C:/Windows/Fonts/simkai.ttf",  # 楷体
+        ]
+        
+        for font_path in chinese_fonts:
+            try:
+                if os.path.exists(font_path):
+                    return ImageFont.truetype(font_path, font_size)
+            except Exception:
+                continue
+        
+        # Fallback to default font
+        return ImageFont.load_default()
     
     def calculate_position(self, image_size: Tuple[int, int], watermark_size: Tuple[int, int], 
                           config: WatermarkConfig) -> Tuple[int, int]:
@@ -197,10 +253,15 @@ class ImageProcessor:
         return positions.get(config.position, (config.margin_x, config.margin_y))
     
     def create_text_watermark(self, text: str, config: WatermarkConfig) -> Image.Image:
-        """Create a text watermark image"""
-        # Get font
-        font = self.get_font(config.font_family, config.font_size, 
-                           config.font_bold, config.font_italic)
+        """Create a text watermark image with Chinese character support"""
+        # Check if text contains Chinese characters and get appropriate font
+        if self.has_chinese_characters(text):
+            # Use Chinese font for Chinese text
+            font = self.get_chinese_font(config.font_size, config.font_bold)
+        else:
+            # Use regular font for Western text
+            font = self.get_font(config.font_family, config.font_size, 
+                               config.font_bold, config.font_italic)
         
         # Calculate text size
         # Create a temporary image to measure text

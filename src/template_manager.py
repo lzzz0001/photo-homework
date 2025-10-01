@@ -5,6 +5,7 @@ Handles watermark template persistence and management operations.
 
 import os
 import json
+import threading
 from typing import Dict, List, Optional, Any
 from image_processor import WatermarkConfig, WatermarkPosition, WatermarkType
 
@@ -17,7 +18,10 @@ class TemplateManager:
         self.last_template_file = os.path.join(templates_dir, "last_config.json")
         
         # Ensure templates directory exists
-        os.makedirs(templates_dir, exist_ok=True)
+        try:
+            os.makedirs(templates_dir, exist_ok=True)
+        except Exception as e:
+            print(f"Warning: Could not create templates directory: {e}")
         
         # Load existing templates
         self.templates = self.load_templates_from_file()
@@ -168,7 +172,7 @@ class TemplateManager:
             return self.dict_to_config(config_data)
             
         except Exception as e:
-            print(f"Error loading last config: {e}")
+            print(f"Warning: Could not load last config: {e}")
             return None
     
     def load_templates_from_file(self) -> Dict[str, Any]:
@@ -181,7 +185,7 @@ class TemplateManager:
                 return json.load(f)
                 
         except Exception as e:
-            print(f"Error loading templates from file: {e}")
+            print(f"Warning: Could not load templates from file: {e}")
             return {}
     
     def save_templates_to_file(self) -> bool:

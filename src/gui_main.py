@@ -206,7 +206,8 @@ class WatermarkApp:
         
         ttk.Label(font_frame, text="Font:").pack(anchor=tk.W)
         self.font_combo = ttk.Combobox(font_frame, textvariable=self.var_font_family,
-                                      values=["Arial", "Times New Roman", "Calibri", "Verdana"])
+                                      values=["Arial", "Times New Roman", "Calibri", "Verdana", 
+                                              "微软雅黑", "宋体", "黑体", "SimSun", "SimHei", "Microsoft YaHei"])
         self.font_combo.pack(fill=tk.X, pady=2)
         self.font_combo.bind('<<ComboboxSelected>>', self.on_font_change)
         

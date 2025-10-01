@@ -14,6 +14,7 @@ import sys
 import platform
 
 # Import Windows-specific modules for drag-drop if available
+WINDOWS_DND_AVAILABLE = False
 if platform.system() == "Windows":
     try:
         import ctypes
@@ -21,6 +22,7 @@ if platform.system() == "Windows":
         WINDOWS_DND_AVAILABLE = True
     except ImportError:
         WINDOWS_DND_AVAILABLE = False
+        print("Info: Windows drag-drop not available (missing ctypes)")
 else:
     WINDOWS_DND_AVAILABLE = False
 
@@ -362,23 +364,10 @@ class DragDropHandler:
             return True
             
         except ImportError:
-            try:
-                # Fallback: Try installing windnd dynamically
-                import subprocess
-                import sys
-                subprocess.check_call([sys.executable, "-m", "pip", "install", "windnd"])
-                
-                # Try importing again
-                import windnd
-                windnd.hook_dropfiles(self.widget, func=self.on_windows_drop)
-                
-                self.dnd_enabled = True
-                print("✓ Windows native drag-drop enabled (windnd installed)")
-                return True
-                
-            except Exception as e:
-                print(f"Windows native drag-drop failed: {e}")
-                return False
+            # Do not attempt to install windnd dynamically in executable
+            # This can cause infinite loops and process spawning
+            print("Windows native drag-drop not available (windnd not installed)")
+            return False
         except Exception as e:
             print(f"Windows native drag-drop setup failed: {e}")
             return False
@@ -403,7 +392,7 @@ class DragDropHandler:
         # Add instruction text if widget is a frame
         try:
             for child in self.widget.winfo_children():
-                if isinstance(child, tk.Label):
+                if isinstance(child, tk.Label) and "drag" in child.cget("text").lower():
                     child.configure(text="Click to Import Images\n(Drag-drop not available)")
                     break
         except:

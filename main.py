@@ -90,14 +90,18 @@ def main():
     
     try:
         # Import the main application class
+        print("Importing GUI modules...")
         from gui_main import WatermarkApp
+        print("GUI modules imported successfully!")
         
         # Create and run the application
         print("Initializing GUI...")
         app = WatermarkApp()
+        print("GUI initialized successfully!")
         
-        print("Application ready!")
+        print("Application ready! Starting main loop...")
         app.run()
+        print("Application closed.")
         
     except ImportError as e:
         error_msg = f"Failed to import application modules: {e}\n\n"
