@@ -216,28 +216,45 @@ class FileManager:
         return True, "Output directory is valid"
     
     def generate_output_filename(self, input_path: str, prefix: str = "", 
-                                suffix: str = "", output_format: str = "JPEG") -> str:
+                                suffix: str = "", output_format: str = "JPEG", 
+                                preserve_original: bool = False) -> str:
         """Generate output filename based on naming rules"""
         base_name = os.path.splitext(os.path.basename(input_path))[0]
-        new_name = f"{prefix}{base_name}{suffix}"
         
-        # Add appropriate extension
-        if output_format.upper() == "JPEG":
-            new_name += ".jpg"
-        else:  # PNG
-            new_name += ".png"
+        if preserve_original:
+            # Keep original filename, just change extension if needed
+            original_ext = os.path.splitext(os.path.basename(input_path))[1].lower()
+            if output_format.upper() == "JPEG":
+                if original_ext not in ['.jpg', '.jpeg']:
+                    new_name = base_name + ".jpg"
+                else:
+                    new_name = os.path.basename(input_path)  # Keep original extension
+            else:  # PNG
+                if original_ext != '.png':
+                    new_name = base_name + ".png"
+                else:
+                    new_name = os.path.basename(input_path)  # Keep original extension
+        else:
+            # Use prefix/suffix approach
+            new_name = f"{prefix}{base_name}{suffix}"
+            
+            # Add appropriate extension
+            if output_format.upper() == "JPEG":
+                new_name += ".jpg"
+            else:  # PNG
+                new_name += ".png"
         
         return new_name
     
     def check_file_conflicts(self, output_dir: str, input_files: List[str], 
                            prefix: str = "", suffix: str = "", 
-                           output_format: str = "JPEG") -> List[str]:
+                           output_format: str = "JPEG", preserve_original: bool = False) -> List[str]:
         """Check for potential file conflicts in output directory"""
         conflicts = []
         
         for input_file in input_files:
             output_filename = self.generate_output_filename(
-                input_file, prefix, suffix, output_format
+                input_file, prefix, suffix, output_format, preserve_original
             )
             output_path = os.path.join(output_dir, output_filename)
             
