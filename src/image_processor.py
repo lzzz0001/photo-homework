@@ -253,7 +253,7 @@ class ImageProcessor:
         return positions.get(config.position, (config.margin_x, config.margin_y))
     
     def create_text_watermark(self, text: str, config: WatermarkConfig) -> Image.Image:
-        """Create a text watermark image with Chinese character support"""
+        """Create a text watermark image with Chinese character support and proper sizing"""
         # Check if text contains Chinese characters and get appropriate font
         if self.has_chinese_characters(text):
             # Use Chinese font for Chinese text
@@ -263,7 +263,7 @@ class ImageProcessor:
             font = self.get_font(config.font_family, config.font_size, 
                                config.font_bold, config.font_italic)
         
-        # Calculate text size
+        # Calculate text size using proper font metrics
         # Create a temporary image to measure text
         temp_img = Image.new('RGBA', (1, 1), (0, 0, 0, 0))
         temp_draw = ImageDraw.Draw(temp_img)
@@ -273,11 +273,19 @@ class ImageProcessor:
         text_width = bbox[2] - bbox[0]
         text_height = bbox[3] - bbox[1]
         
-        # Add padding for shadow and stroke
-        padding = max(config.stroke_width, max(abs(config.shadow_offset[0]), 
-                                               abs(config.shadow_offset[1]))) + 5
+        # Add generous padding for shadow, stroke, and font rendering
+        # This is especially important for large fonts to prevent clipping
+        base_padding = max(config.stroke_width, max(abs(config.shadow_offset[0]), 
+                                               abs(config.shadow_offset[1]))) + 10
         
-        # Create watermark image with padding
+        # Add extra padding for large fonts to prevent clipping
+        extra_padding = 0
+        if config.font_size > 50:
+            extra_padding = min(config.font_size // 5, 20)  # Add extra padding for large fonts
+        
+        padding = base_padding + extra_padding
+        
+        # Create watermark image with adequate padding
         wm_width = int(text_width + padding * 2)
         wm_height = int(text_height + padding * 2)
         watermark = Image.new('RGBA', (wm_width, wm_height), (0, 0, 0, 0))
