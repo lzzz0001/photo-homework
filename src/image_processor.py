@@ -115,47 +115,105 @@ class ImageProcessor:
     
     def get_font(self, font_family: str, font_size: int, bold: bool = False, italic: bool = False):
         """Get font object with fallback handling and Chinese character support"""
-        font_style = ""
-        if bold and italic:
-            font_style = "bi"
-        elif bold:
-            font_style = "b"
-        elif italic:
-            font_style = "i"
-        
-        # Check if text contains Chinese characters (will be checked later in create_text_watermark)
-        # For now, we'll prepare both Western and Chinese font paths
-        
+        # Try to find the font with specific styling first
         font_paths_to_try = []
         
-        # Add specific font family paths
+        # Add specific font family paths with styling
         if font_family.lower() == "arial":
+            # Try styled versions first
+            if bold and italic:
+                font_paths_to_try.extend([
+                    "C:/Windows/Fonts/arialbi.ttf",
+                    "C:/Windows/Fonts/Arial Bold Italic.ttf"
+                ])
+            elif bold:
+                font_paths_to_try.extend([
+                    "C:/Windows/Fonts/arialbd.ttf",
+                    "C:/Windows/Fonts/Arial Bold.ttf"
+                ])
+            elif italic:
+                font_paths_to_try.extend([
+                    "C:/Windows/Fonts/ariali.ttf",
+                    "C:/Windows/Fonts/Arial Italic.ttf"
+                ])
+            # Fallback to regular
             font_paths_to_try.extend([
-                f"C:/Windows/Fonts/arial{font_style}.ttf",
-                "C:/Windows/Fonts/arial.ttf"
+                "C:/Windows/Fonts/arial.ttf",
+                "C:/Windows/Fonts/Arial.ttf"
             ])
         elif font_family.lower() == "times new roman":
+            # Try styled versions first
+            if bold and italic:
+                font_paths_to_try.extend([
+                    "C:/Windows/Fonts/timesbi.ttf",
+                    "C:/Windows/Fonts/timesbi.ttc",
+                    "C:/Windows/Fonts/Times New Roman Bold Italic.ttf"
+                ])
+            elif bold:
+                font_paths_to_try.extend([
+                    "C:/Windows/Fonts/timesbd.ttf",
+                    "C:/Windows/Fonts/timesb.ttc",
+                    "C:/Windows/Fonts/Times New Roman Bold.ttf"
+                ])
+            elif italic:
+                font_paths_to_try.extend([
+                    "C:/Windows/Fonts/timesi.ttf",
+                    "C:/Windows/Fonts/timesi.ttc",
+                    "C:/Windows/Fonts/Times New Roman Italic.ttf"
+                ])
+            # Fallback to regular
             font_paths_to_try.extend([
-                f"C:/Windows/Fonts/times{font_style}.ttf",
-                "C:/Windows/Fonts/times.ttf"
+                "C:/Windows/Fonts/times.ttf",
+                "C:/Windows/Fonts/times.ttc",
+                "C:/Windows/Fonts/Times New Roman.ttf"
             ])
         elif font_family.lower() == "calibri":
+            # Try styled versions first
+            if bold and italic:
+                font_paths_to_try.extend([
+                    "C:/Windows/Fonts/calibribi.ttf",
+                    "C:/Windows/Fonts/calibribi.ttf",
+                    "C:/Windows/Fonts/Calibri Bold Italic.ttf"
+                ])
+            elif bold:
+                font_paths_to_try.extend([
+                    "C:/Windows/Fonts/calibrib.ttf",
+                    "C:/Windows/Fonts/calibri-bold.ttf",
+                    "C:/Windows/Fonts/Calibri Bold.ttf"
+                ])
+            elif italic:
+                font_paths_to_try.extend([
+                    "C:/Windows/Fonts/calibrii.ttf",
+                    "C:/Windows/Fonts/calibri-italic.ttf",
+                    "C:/Windows/Fonts/Calibri Italic.ttf"
+                ])
+            # Fallback to regular
             font_paths_to_try.extend([
-                f"C:/Windows/Fonts/calibri{font_style}.ttf",
-                "C:/Windows/Fonts/calibri.ttf"
+                "C:/Windows/Fonts/calibri.ttf",
+                "C:/Windows/Fonts/Calibri.ttf"
             ])
         elif font_family.lower() in ["simsun", "宋体"]:
             font_paths_to_try.extend([
-                "C:/Windows/Fonts/simsun.ttc"
+                "C:/Windows/Fonts/simsun.ttc",
+                "C:/Windows/Fonts/simsunb.ttf" if bold else "C:/Windows/Fonts/simsun.ttc"
             ])
         elif font_family.lower() in ["simhei", "黑体"]:
             font_paths_to_try.extend([
                 "C:/Windows/Fonts/simhei.ttf"
             ])
         elif font_family.lower() in ["microsoftyahei", "微软雅黑", "yahei"]:
+            # Try styled versions first
+            if bold:
+                font_paths_to_try.extend([
+                    "C:/Windows/Fonts/msyhbd.ttc",
+                    "C:/Windows/Fonts/msyhbd.ttf",
+                    "C:/Windows/Fonts/MSYHBD.TTC"
+                ])
+            # Fallback to regular
             font_paths_to_try.extend([
                 "C:/Windows/Fonts/msyh.ttc",
-                "C:/Windows/Fonts/msyhbd.ttc" if bold else "C:/Windows/Fonts/msyh.ttc"
+                "C:/Windows/Fonts/msyh.ttf",
+                "C:/Windows/Fonts/MSYH.TTC"
             ])
         
         # Add default Western font paths
@@ -184,15 +242,71 @@ class ImageProcessor:
                 return True
         return False
     
-    def get_chinese_font(self, font_size: int, bold: bool = False):
-        """Get a Chinese-compatible font"""
-        chinese_fonts = [
-            "C:/Windows/Fonts/msyh.ttc",    # 微软雅黑 (best for Chinese)
-            "C:/Windows/Fonts/msyhbd.ttc" if bold else "C:/Windows/Fonts/msyh.ttc",
-            "C:/Windows/Fonts/simsun.ttc",  # 宋体
-            "C:/Windows/Fonts/simhei.ttf",  # 黑体
-            "C:/Windows/Fonts/simkai.ttf",  # 楷体
-        ]
+    def get_chinese_font(self, font_family: str, font_size: int, bold: bool = False, italic: bool = False):
+        """Get a Chinese-compatible font with styling support"""
+        chinese_fonts = []
+        
+        # Try to find the best Chinese font based on selected family
+        if font_family.lower() in ["microsoftyahei", "微软雅黑", "yahei"]:
+            # 微软雅黑 (Microsoft YaHei) - best for Chinese text
+            if bold and italic:
+                chinese_fonts.extend([
+                    "C:/Windows/Fonts/msyhbd.ttc",
+                    "C:/Windows/Fonts/msyhbd.ttf",
+                    "C:/Windows/Fonts/MSYHBD.TTC"
+                ])
+            elif bold:
+                chinese_fonts.extend([
+                    "C:/Windows/Fonts/msyhbd.ttc",
+                    "C:/Windows/Fonts/msyhbd.ttf",
+                    "C:/Windows/Fonts/MSYHBD.TTC"
+                ])
+            elif italic:
+                # YaHei doesn't have a true italic, but we can try
+                chinese_fonts.extend([
+                    "C:/Windows/Fonts/msyh.ttc",
+                    "C:/Windows/Fonts/msyh.ttf",
+                    "C:/Windows/Fonts/MSYH.TTC"
+                ])
+            else:
+                chinese_fonts.extend([
+                    "C:/Windows/Fonts/msyh.ttc",
+                    "C:/Windows/Fonts/msyh.ttf",
+                    "C:/Windows/Fonts/MSYH.TTC"
+                ])
+        elif font_family.lower() in ["simsun", "宋体"]:
+            # 宋体 (SimSun)
+            if bold:
+                chinese_fonts.extend([
+                    "C:/Windows/Fonts/simsunb.ttf"
+                ])
+            chinese_fonts.extend([
+                "C:/Windows/Fonts/simsun.ttc"
+            ])
+        elif font_family.lower() in ["simhei", "黑体"]:
+            # 黑体 (SimHei) - usually doesn't have bold/italic variants
+            chinese_fonts.extend([
+                "C:/Windows/Fonts/simhei.ttf"
+            ])
+        else:
+            # Default to YaHei if unknown font family
+            if bold:
+                chinese_fonts.extend([
+                    "C:/Windows/Fonts/msyhbd.ttc",
+                    "C:/Windows/Fonts/msyhbd.ttf"
+                ])
+            chinese_fonts.extend([
+                "C:/Windows/Fonts/msyh.ttc",
+                "C:/Windows/Fonts/msyh.ttf"
+            ])
+        
+        # Add fallback Chinese fonts
+        chinese_fonts.extend([
+            "C:/Windows/Fonts/simkai.ttf",
+            "C:/Windows/Fonts/simfang.ttf",
+            "C:/Windows/Fonts/STXIHEI.TTF",
+            "C:/Windows/Fonts/STZHONGS.TTF"
+        ])
         
         for font_path in chinese_fonts:
             try:
@@ -255,9 +369,12 @@ class ImageProcessor:
     def create_text_watermark(self, text: str, config: WatermarkConfig) -> Image.Image:
         """Create a text watermark image with Chinese character support and proper sizing"""
         # Check if text contains Chinese characters and get appropriate font
-        if self.has_chinese_characters(text):
+        has_chinese = self.has_chinese_characters(text)
+        
+        if has_chinese:
             # Use Chinese font for Chinese text
-            font = self.get_chinese_font(config.font_size, config.font_bold)
+            font = self.get_chinese_font(config.font_family, config.font_size, 
+                                       config.font_bold, config.font_italic)
         else:
             # Use regular font for Western text
             font = self.get_font(config.font_family, config.font_size, 
@@ -312,6 +429,21 @@ class ImageProcessor:
         # Apply rotation if specified
         if config.rotation != 0:
             watermark = watermark.rotate(config.rotation, expand=True)
+        
+        # For Chinese text with italic requested, apply skew transformation
+        if has_chinese and config.font_italic:
+            # Apply skew transformation to simulate italic effect
+            width, height = watermark.size
+            skew_factor = 0.2  # Adjust this to control the italic effect
+            
+            # Create transformation matrix for skew
+            from PIL import ImageTransform
+            matrix = (1, skew_factor, -skew_factor * height, 0, 1, 0)
+            skewed_watermark = watermark.transform(
+                (int(width + skew_factor * height), height),
+                ImageTransform.AffineTransform(matrix)
+            )
+            watermark = skewed_watermark
         
         return watermark
     
