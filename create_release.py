@@ -64,7 +64,7 @@ def create_release_package():
     
     # Create a simple release package with just documentation
     timestamp = datetime.now().strftime("%Y%m%d")
-    release_zip = f"PhotoWatermark_v1.0.0_{timestamp}_source_only.zip"
+    release_zip = f"PhotoWatermark_v1.1.0_{timestamp}_source_only.zip"
     
     with zipfile.ZipFile(release_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
         for root, dirs, files in os.walk(release_dir):
@@ -84,8 +84,8 @@ def create_release_package():
     
     print(f"\n🚀 Ready for GitHub release!")
     print(f"   Upload: {release_zip}")
-    print(f"   Tag: v1.0.0")
-    print(f"   Title: Photo Watermark Application v1.0.0")
+    print(f"   Tag: v1.1.0")
+    print(f"   Title: Photo Watermark Application v1.1.0")
     print("\n💡 To create executables for release:")
     print("   1. Run 'pyinstaller --onefile --windowed main.py'")
     print("   2. Upload the executable as a GitHub Release asset")
