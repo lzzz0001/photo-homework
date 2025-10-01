@@ -10,7 +10,7 @@ Features:
 - Multiple export formats
 
 Author: Photo Watermark Team
-Version: 1.0.0
+Version: 1.1.0
 """
 
 import sys

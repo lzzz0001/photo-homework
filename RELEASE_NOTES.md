@@ -1,45 +1,58 @@
-# Release Notes - Photo Watermark Application v1.0.0
+# Release Notes - Photo Watermark Application v1.1.0
 
-## 🎉 Welcome to Photo Watermark Application!
+## 🎉 Version 1.1.0 - Enhanced Functionality Release
 
-This is the initial release of our comprehensive watermarking solution for Windows. After extensive development and testing, we're excited to bring you a powerful, user-friendly tool for adding watermarks to your images.
+This release includes significant improvements and bug fixes based on user feedback and extensive testing. We've enhanced the core functionality, fixed critical issues, and improved the overall user experience.
 
 ## 📦 What's Included
 
 ### Executable Release
-- **PhotoWatermark.exe** (20MB) - Standalone Windows application
+- **PhotoWatermark.exe** - Standalone Windows application
 - **No installation required** - Just download and run!
 - **Windows 10/11 compatible** - Works on all modern Windows systems
 
 ### Source Code Release
-- Complete Python source code
-- Requirements file for easy setup
+- Complete Python source code with all improvements
+- Updated requirements file
 - Comprehensive test suite
 - Build scripts for creating your own executable
 
-## 🌟 Key Features
+## 🌟 Key Features Added
 
-### Easy to Use
-- **Drag-and-drop interface** - Simply drag images into the application
-- **Real-time preview** - See your watermark changes instantly
-- **Intuitive controls** - Organized in clear, logical tabs
+### Enhanced Watermarking
+- **Chinese font support** - Full support for Chinese characters in watermarks
+- **Font styling improvements** - Proper bold and italic support for all fonts
+- **Simulated italic for Chinese** - Visual italic effect for Chinese text using font skewing
+- **Improved font selection** - Better font family handling with proper fallbacks
 
-### Powerful Watermarking
-- **Text watermarks** with full customization (font, size, color, effects)
-- **Image watermarks** with transparency support
-- **9 preset positions** plus manual positioning
-- **Rotation and opacity** controls
+### Drag-and-Drop Improvements
+- **Windows native drag-drop** - Robust file import using windnd library
+- **Multi-file support** - Import multiple files and folders via drag-drop
+- **Enhanced error handling** - Better feedback for invalid files
 
-### Professional Results
-- **High-quality output** with configurable JPEG quality
-- **Batch processing** for multiple images
-- **Format flexibility** - Export as JPEG or PNG
-- **Overwrite protection** to keep your originals safe
+### Image Processing Enhancements
+- **EXIF orientation support** - Automatic correction for camera-rotated images
+- **Large font watermark fix** - No more clipping with large font sizes
+- **Improved filename display** - Better handling of long filenames with tooltips
 
-### Smart Workflow
-- **Template system** - Save and reuse your favorite watermark settings
-- **Auto-save** - Application remembers your last settings
-- **Comprehensive format support** - JPEG, PNG, BMP, TIFF input
+### User Interface Improvements
+- **Smart filename truncation** - Shows both beginning and end of long filenames
+- **Enhanced tooltips** - Hover to see complete filenames
+- **Better error messages** - Clear feedback for import and processing issues
+
+## 🛠️ Bug Fixes
+
+### Critical Fixes
+- ✅ **Fixed drag-drop functionality** - Resolved issues with file import
+- ✅ **Fixed Chinese watermark display** - Proper rendering of Chinese characters
+- ✅ **Fixed large font clipping** - Watermarks no longer cut off at the bottom
+- ✅ **Fixed font styling** - Bold and italic now work correctly
+- ✅ **Fixed image orientation** - Photos display in correct orientation
+
+### Performance Improvements
+- ✅ **Optimized memory usage** - Better handling of large images
+- ✅ **Faster preview updates** - Improved rendering performance
+- ✅ **Enhanced error handling** - More robust file processing
 
 ## 🚀 Getting Started
 
@@ -57,10 +70,11 @@ This is the initial release of our comprehensive watermarking solution for Windo
 
 ## 📊 What's Been Tested
 
-- ✅ **Text watermarking** - All font styles, colors, and effects
+- ✅ **Text watermarking** - All font styles, colors, and effects (including Chinese)
 - ✅ **Image watermarking** - PNG transparency, scaling, rotation
 - ✅ **File operations** - Import, export, batch processing
 - ✅ **Template management** - Save, load, delete templates
+- ✅ **Drag-and-drop functionality** - File import via multiple methods
 - ✅ **Error handling** - Graceful handling of invalid files and operations
 - ✅ **Performance** - Smooth operation with large images and batches
 
@@ -78,6 +92,7 @@ This is the initial release of our comprehensive watermarking solution for Windo
 - Save frequently used settings as templates
 - Use JPEG export for smaller file sizes, PNG for quality
 - Check the preview before batch processing multiple images
+- For Chinese watermarks, use Microsoft YaHei or SimSun fonts
 
 ### Performance Tips
 - Close other applications when processing large batches
@@ -90,6 +105,7 @@ This is the initial release of our comprehensive watermarking solution for Windo
 - **Python 3.8+** - Core programming language
 - **Pillow (PIL)** - High-quality image processing
 - **Tkinter** - Native GUI framework
+- **windnd** - Windows native drag-drop support
 - **PyInstaller** - Executable packaging
 
 ### Architecture
@@ -99,7 +115,8 @@ This is the initial release of our comprehensive watermarking solution for Windo
 
 ## 🐛 Known Issues
 
-None at this time! This release has been thoroughly tested.
+- Some very old Chinese fonts may not support all styling options
+- Extremely large images may require significant processing time
 
 ## 🔮 Future Plans
 
@@ -107,12 +124,31 @@ None at this time! This release has been thoroughly tested.
 - Additional watermark effects and filters
 - Command-line interface for automation
 - Plugin system for custom watermark types
+- Cloud integration for template sharing
 
 ## 📞 Support & Feedback
 
 - **Bug Reports**: Open an issue on GitHub
 - **Feature Requests**: Share your ideas in GitHub Discussions
 - **General Questions**: Check the documentation or ask in Discussions
+
+## 📝 Changelog Summary
+
+### v1.1.0 (Current Release)
+- Added Chinese font support with proper rendering
+- Fixed drag-and-drop functionality with windnd library
+- Implemented simulated italic effect for Chinese text
+- Fixed EXIF orientation issues for camera photos
+- Improved large font watermark handling
+- Enhanced filename display with tooltips
+- Fixed font styling (bold/italic) for all font types
+- Added comprehensive error handling and user feedback
+
+### v1.0.0 (Initial Release)
+- Initial release with core watermarking functionality
+- Text and image watermark support
+- Basic drag-and-drop interface
+- Template management system
 
 ## 🙏 Thank You
 
