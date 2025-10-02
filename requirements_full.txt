@@ -1,0 +1,4 @@
+Pillow>=10.0.0
+pyinstaller>=5.13.0
+windnd>=1.0.2
+cx_Freeze>=6.15.0

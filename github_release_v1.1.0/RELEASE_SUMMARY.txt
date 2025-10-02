@@ -1,0 +1,16 @@
+Photo Watermark Application v1.1.0 - GitHub Release Package
+================================================================
+
+This package contains everything needed for the v1.1.0 release of the Photo Watermark Application.
+
+Contents:
+1. PhotoWatermark_v1.1.0_Windows_x64.exe - Fixed standalone executable
+2. PhotoWatermark_v1.1.0_source.zip - Complete source code
+3. Documentation files (README.md, LICENSE, etc.)
+4. Installation and release notes
+
+Important: This release fixes critical import errors that affected previous versions.
+The executable now properly includes all dependencies and should start without issues.
+
+For installation instructions, see INSTALLATION.md
+For detailed release notes, see RELEASE_NOTES_v1.1.0.md

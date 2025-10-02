@@ -1,0 +1,37 @@
+{
+  "watermark_type": "text",
+  "position": "bottom_right",
+  "opacity": 50,
+  "rotation": 0,
+  "custom_x": 0,
+  "custom_y": 0,
+  "text": "Watermark",
+  "font_family": "Arial",
+  "font_size": 36,
+  "font_bold": false,
+  "font_italic": false,
+  "text_color": [
+    255,
+    255,
+    255
+  ],
+  "stroke_width": 2,
+  "stroke_color": [
+    0,
+    0,
+    0
+  ],
+  "shadow_offset": [
+    2,
+    2
+  ],
+  "shadow_color": [
+    0,
+    0,
+    0
+  ],
+  "watermark_image_path": "",
+  "scale_factor": 1.0,
+  "margin_x": 20,
+  "margin_y": 20
+}

@@ -1,0 +1,15 @@
+[tool.pyright]
+include = ["src", "*.py"]
+exclude = ["**/__pycache__", ".venv"]
+venvPath = "."
+venv = "venv"
+pythonVersion = "3.13"
+typeCheckingMode = "basic"
+reportMissingImports = true
+reportMissingTypeStubs = false
+stubPath = "typings"
+
+[tool.pylsp-mypy]
+enabled = true
+live_mode = true
+strict = false

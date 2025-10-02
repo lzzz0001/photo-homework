@@ -132,4 +132,8 @@ README_*.txt
 test_batch_*/
 test_positioning/
 test_tiff_output/
-test_formats/
+
+# Test output images (should not be committed)
+chinese_*.png
+final_chinese_*.png
+final_test_*.png
